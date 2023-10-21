@@ -9,11 +9,13 @@ from cryptography.fernet import Fernet
 app = QApplication(sys.argv)
 
 
+# Distribute lists for table
 def distribute_elements(list1, list2):
     result_lists = [[list1[i], list2[i]] for i in range(min(len(list1), len(list2)))]
     return result_lists
 
 
+# Table model
 class TableModel(QAbstractTableModel):
     def __init__(self, data, headers):
         super(TableModel, self).__init__()
@@ -28,7 +30,7 @@ class TableModel(QAbstractTableModel):
         return len(self.data)
 
     def columnCount(self, index):
-        return len(self.data[0])
+         return 2
 
     def headerData(self, section, orientation, role):
         if role == Qt.ItemDataRole.DisplayRole:
@@ -48,19 +50,21 @@ class Window(QMainWindow):
         self.layout_4_widgets = QStackedLayout()
 
         # Login widgets
-        self.login_label = QLabel('Логин:', self)
-        self.login_label.setFixedSize(50, 50)
-        self.login_label.move(50, 110)
+        #self.login_label = QLabel('Логин:', self)
+        #self.login_label.setFixedSize(50, 50)
+        #self.login_label.move(50, 110)
 
         self.login_input = QLineEdit(self)
+        self.login_input.setPlaceholderText("Введите логин...")
         self.login_input.setFixedSize(360, 25)
         self.login_input.move(120, 120)
 
-        self.password_label = QLabel('Пароль:', self)
-        self.password_label.setFixedSize(50, 50)
-        self.password_label.move(50, 240)
+        #self.password_label = QLabel('Пароль:', self)
+        #self.password_label.setFixedSize(50, 50)
+        #self.password_label.move(50, 240)
 
         self.password_input = QLineEdit(self)
+        self.password_input.setPlaceholderText("Введите пароль...")
         self.password_input.setFixedSize(360, 25)
         self.password_input.move(120, 250)
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
@@ -83,10 +87,12 @@ class Window(QMainWindow):
         self.add_button = QPushButton('Записать', self)
         self.add_button.setFixedSize(75, 23)
         self.add_button.move(20, 420)
+        self.add_button.clicked.connect(self.add_2_table)
 
         self.delete_button = QPushButton("Удалить", self)
         self.delete_button.setFixedSize(75, 23)
         self.delete_button.move(120, 420)
+        self.delete_button.clicked.connect(self.delete_from_table)
 
         self.logout_button = QPushButton("Выйти", self)
         self.logout_button.setFixedSize(75, 23)
@@ -95,9 +101,9 @@ class Window(QMainWindow):
 
         # Add login widgets to layout
 
-        self.layout_4_widgets.addWidget(self.login_label)
+        #self.layout_4_widgets.addWidget(self.login_label)
         self.layout_4_widgets.addWidget(self.login_input)
-        self.layout_4_widgets.addWidget(self.password_label)
+        #self.layout_4_widgets.addWidget(self.password_label)
         self.layout_4_widgets.addWidget(self.password_input)
 
         # Add main widgets to layout
@@ -116,10 +122,10 @@ class Window(QMainWindow):
 
         # Show widgets login
 
-        self.login_label.show()
+        #self.login_label.show()
         self.login_input.show()
         self.password_input.show()
-        self.password_label.show()
+        #self.password_label.show()
 
         # Get from db
         connect_db = sqlite3.connect("Accounts.db")
@@ -184,11 +190,11 @@ class Window(QMainWindow):
             isExists = os.path.exists('Usersdb')
             if not isExists:
                 os.makedirs('Usersdb')
-                print('yes')
             conn_user = sqlite3.connect(f'Usersdb/{login}.db')
             cursor_user = conn_user.cursor()
 
             cursor_user.execute('CREATE TABLE IF NOT EXISTS services (service TEXT, password TEXT, key BLOB)')
+
             conn_user.commit()
             conn_user.close()
 
@@ -198,9 +204,9 @@ class Window(QMainWindow):
             self.delete_button.show()
             self.logout_button.show()
 
-            self.login_label.hide()
+            #self.login_label.hide()
             self.login_input.hide()
-            self.password_label.hide()
+            #self.password_label.hide()
             self.password_input.hide()
             self.log_button.hide()
             self.register_button.hide()
@@ -232,17 +238,28 @@ class Window(QMainWindow):
 
         query = "SELECT password FROM services"
         cursor.execute(query)
-        column_password = [row[0] for row in cursor.fetchall()]
+        column_password_encrypted = [row[0] for row in cursor.fetchall()]
+
+        query = "SELECT key FROM services"
+        cursor.execute(query)
+        key_column=[row[0] for row in cursor.fetchall()]
+
+        column_password_decrypted=[]
+
+        if len(key_column) != 0:
+            for i in range(len(column_password_encrypted)):
+                cipher = Fernet(key_column[i])
+                decrypted = cipher.decrypt(column_password_encrypted[i]).decode()
+                column_password_decrypted.append(decrypted)
 
         cursor.close()
         connection.close()
 
         # Create list for table
 
-        list_4_table = distribute_elements(column_sevice, column_password)
+        list_4_table = distribute_elements(column_sevice, column_password_decrypted)
 
         headers_names = ['Сервис', 'Пароль']
-        print(list_4_table)
 
         # Create table model and resize headers
         table_model = TableModel(list_4_table, headers_names)
@@ -256,9 +273,9 @@ class Window(QMainWindow):
         confirmation = QMessageBox.question(self, "Подтверждение выхода", "Вы уверены, что хотите выйти?",
                                             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         if confirmation == QMessageBox.StandardButton.Yes:
-            self.login_label.show()
+            #self.login_label.show()
             self.login_input.show()
-            self.password_label.show()
+            #self.password_label.show()
             self.password_input.show()
             self.log_button.show()
             self.register_button.show()
@@ -271,6 +288,76 @@ class Window(QMainWindow):
             self.delete_button.hide()
             self.logout_button.hide()
 
+    def add_2_table(self):
+        dialog = QDialog()
+        Vbox_layout = QVBoxLayout(dialog)
+
+        service_line = QLineEdit()
+        service_line.setPlaceholderText("Введите название сервиса")
+
+        password_line = QLineEdit()
+        password_line.setPlaceholderText("Введите пароль")
+
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        button_box.accepted.connect(dialog.accept)
+        button_box.rejected.connect(dialog.reject)
+
+        Vbox_layout.addWidget(service_line)
+        Vbox_layout.addWidget(password_line)
+        Vbox_layout.addWidget(button_box)
+
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            service = service_line.text()
+            password = password_line.text()
+
+            if service == '' or password == '':
+                QMessageBox.warning(self,"Пустые поля","Введите данные")
+                self.add_2_table()
+
+            else:
+                key = Fernet.generate_key()
+                cipher = Fernet(key)
+
+                encrypted_password = cipher.encrypt(password.encode())
+
+                connection = sqlite3.connect(f'Usersdb/{self.logged}.db')
+                cursor = connection.cursor()
+
+                cursor.execute('INSERT INTO services VALUES (?, ?, ?)', (service, encrypted_password, key))
+
+                connection.commit()
+                connection.close()
+
+            self.create_table_4_user()
+    def delete_from_table(self):
+        dialog = QDialog()
+        Vbox_layout = QVBoxLayout(dialog)
+
+        service_line = QLineEdit()
+        service_line.setPlaceholderText("Введите название сервиса для его удаления")
+
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Yes | QDialogButtonBox.StandardButton.Cancel)
+        button_box.accepted.connect(dialog.accept)
+        button_box.rejected.connect(dialog.reject)
+
+        Vbox_layout.addWidget(service_line)
+        Vbox_layout.addWidget(button_box)
+
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            service = service_line.text()
+
+            connect = sqlite3.connect(f'Usersdb/{self.logged}.db')
+            cursor = connect.cursor()
+
+            try:
+                cursor.execute('DELETE FROM services WHERE service = ?', (service,))
+            except sqlite3.OperationalError:
+                QMessageBox.warning(self,"Удаление не выполнено","Такого названия не существует в таблице")
+
+            connect.commit()
+            connect.close()
+
+            self.create_table_4_user()
 
 window = Window()
 window.show()
