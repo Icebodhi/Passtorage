@@ -30,7 +30,7 @@ class TableModel(QAbstractTableModel):
         return len(self.data)
 
     def columnCount(self, index):
-         return 2
+        return 2
 
     def headerData(self, section, orientation, role):
         if role == Qt.ItemDataRole.DisplayRole:
@@ -50,18 +50,18 @@ class Window(QMainWindow):
         self.layout_4_widgets = QStackedLayout()
 
         # Login widgets
-        #self.login_label = QLabel('Логин:', self)
-        #self.login_label.setFixedSize(50, 50)
-        #self.login_label.move(50, 110)
+        self.login_label = QLabel('Логин:', self)
+        self.login_label.setFixedSize(50, 50)
+        self.login_label.move(50, 110)
 
         self.login_input = QLineEdit(self)
         self.login_input.setPlaceholderText("Введите логин...")
         self.login_input.setFixedSize(360, 25)
         self.login_input.move(120, 120)
 
-        #self.password_label = QLabel('Пароль:', self)
-        #self.password_label.setFixedSize(50, 50)
-        #self.password_label.move(50, 240)
+        self.password_label = QLabel('Пароль:', self)
+        self.password_label.setFixedSize(50, 50)
+        self.password_label.move(50, 240)
 
         self.password_input = QLineEdit(self)
         self.password_input.setPlaceholderText("Введите пароль...")
@@ -94,6 +94,11 @@ class Window(QMainWindow):
         self.delete_button.move(120, 420)
         self.delete_button.clicked.connect(self.delete_from_table)
 
+        self.find_button = QPushButton("Найти",self)
+        self.find_button.setFixedSize(75, 23)
+        self.find_button.move(220,420)
+        self.find_button.clicked.connect(self.find_needed_password)
+
         self.logout_button = QPushButton("Выйти", self)
         self.logout_button.setFixedSize(75, 23)
         self.logout_button.move(490, 420)
@@ -101,9 +106,9 @@ class Window(QMainWindow):
 
         # Add login widgets to layout
 
-        #self.layout_4_widgets.addWidget(self.login_label)
+        self.layout_4_widgets.addWidget(self.login_label)
         self.layout_4_widgets.addWidget(self.login_input)
-        #self.layout_4_widgets.addWidget(self.password_label)
+        self.layout_4_widgets.addWidget(self.password_label)
         self.layout_4_widgets.addWidget(self.password_input)
 
         # Add main widgets to layout
@@ -118,14 +123,15 @@ class Window(QMainWindow):
         self.main_table.hide()
         self.add_button.hide()
         self.delete_button.hide()
+        self.find_button.hide()
         self.logout_button.hide()
 
         # Show widgets login
 
-        #self.login_label.show()
+        self.login_label.show()
         self.login_input.show()
         self.password_input.show()
-        #self.password_label.show()
+        self.password_label.show()
 
         # Get from db
         connect_db = sqlite3.connect("Accounts.db")
@@ -202,11 +208,12 @@ class Window(QMainWindow):
             self.main_table.show()
             self.add_button.show()
             self.delete_button.show()
+            self.find_button.show()
             self.logout_button.show()
 
-            #self.login_label.hide()
+            self.login_label.hide()
             self.login_input.hide()
-            #self.password_label.hide()
+            self.password_label.hide()
             self.password_input.hide()
             self.log_button.hide()
             self.register_button.hide()
@@ -242,9 +249,9 @@ class Window(QMainWindow):
 
         query = "SELECT key FROM services"
         cursor.execute(query)
-        key_column=[row[0] for row in cursor.fetchall()]
+        key_column = [row[0] for row in cursor.fetchall()]
 
-        column_password_decrypted=[]
+        column_password_decrypted = []
 
         if len(key_column) != 0:
             for i in range(len(column_password_encrypted)):
@@ -273,9 +280,9 @@ class Window(QMainWindow):
         confirmation = QMessageBox.question(self, "Подтверждение выхода", "Вы уверены, что хотите выйти?",
                                             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         if confirmation == QMessageBox.StandardButton.Yes:
-            #self.login_label.show()
+            self.login_label.show()
             self.login_input.show()
-            #self.password_label.show()
+            self.password_label.show()
             self.password_input.show()
             self.log_button.show()
             self.register_button.show()
@@ -286,6 +293,7 @@ class Window(QMainWindow):
             self.main_table.hide()
             self.add_button.hide()
             self.delete_button.hide()
+            self.find_button.hide()
             self.logout_button.hide()
 
     def add_2_table(self):
@@ -311,7 +319,7 @@ class Window(QMainWindow):
             password = password_line.text()
 
             if service == '' or password == '':
-                QMessageBox.warning(self,"Пустые поля","Введите данные")
+                QMessageBox.warning(self, "Пустые поля", "Введите данные")
                 self.add_2_table()
 
             else:
@@ -329,8 +337,10 @@ class Window(QMainWindow):
                 connection.close()
 
             self.create_table_4_user()
+
     def delete_from_table(self):
         dialog = QDialog()
+        dialog.resize(300, 100)
         Vbox_layout = QVBoxLayout(dialog)
 
         service_line = QLineEdit()
@@ -343,21 +353,76 @@ class Window(QMainWindow):
         Vbox_layout.addWidget(service_line)
         Vbox_layout.addWidget(button_box)
 
-        if dialog.exec() == QDialog.DialogCode.Accepted:
+        pressed_button=dialog.exec()
+
+        if pressed_button == QDialog.DialogCode.Accepted and service_line.text() != '':
             service = service_line.text()
 
             connect = sqlite3.connect(f'Usersdb/{self.logged}.db')
             cursor = connect.cursor()
 
-            try:
-                cursor.execute('DELETE FROM services WHERE service = ?', (service,))
-            except sqlite3.OperationalError:
-                QMessageBox.warning(self,"Удаление не выполнено","Такого названия не существует в таблице")
+            confirmation = QMessageBox.question(self, "Подтверждение удаления",
+                                                "Вы уверены, что хотите удалить пароль от этого сервиса?",
+                                                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            if confirmation == QMessageBox.StandardButton.Yes:
+                try:
+                    cursor.execute('DELETE FROM services WHERE service = ?', (service,))
+                except sqlite3.OperationalError:
+                    QMessageBox.warning(self, "Удаление не выполнено", "Такого названия не существует в таблице")
 
             connect.commit()
             connect.close()
 
+        elif pressed_button != QDialog.DialogCode.Rejected:
+            QMessageBox.warning(self, "Пустые поля", "Введите данные")
+            self.delete_from_table()
+
             self.create_table_4_user()
+
+    def find_needed_password(self):
+        dialog = QDialog()
+        dialog.resize(350,100)
+        Vbox_layout = QVBoxLayout(dialog)
+
+        service_line = QLineEdit()
+        service_line.setPlaceholderText("Введите название сервиса для поиска пароля от него")
+
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Yes | QDialogButtonBox.StandardButton.Cancel)
+        button_box.accepted.connect(dialog.accept)
+        button_box.rejected.connect(dialog.reject)
+
+        Vbox_layout.addWidget(service_line)
+        Vbox_layout.addWidget(button_box)
+
+        pressed_button = dialog.exec()
+        if pressed_button == QDialog.DialogCode.Accepted and service_line.text() != '':
+            service = service_line.text()
+
+            connect = sqlite3.connect(f'Usersdb/{self.logged}.db')
+            cursor = connect.cursor()
+
+            cursor.execute('SELECT password FROM services WHERE service=?', (service,))
+            result = cursor.fetchone()[-1]
+            cursor.execute('SELECT key FROM services WHERE service=?', (service,))
+            key=cursor.fetchone()[-1]
+            cipher=Fernet(key)
+
+            if result is None:
+                QMessageBox.information(self, 'Не найдено', 'Записанного пароля не найдено')
+                return
+            else:
+                decrypted_password=cipher.decrypt(result).decode()
+                QMessageBox.information(self,"Найден пароль",f"Пароль от {service}: {decrypted_password}")
+
+            connect.commit()
+            connect.close()
+
+        elif pressed_button != QDialog.DialogCode.Rejected:
+            QMessageBox.warning(self, "Пустые поля", "Введите данные")
+            self.find_needed_password()
+
+            self.create_table_4_user()
+
 
 window = Window()
 window.show()
