@@ -5,8 +5,9 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 from cryptography.fernet import Fernet
+import secret
 
-SECRET =os.environ['SECRET']
+SECRET = secret
 print(SECRET)
 
 app = QApplication(sys.argv)
