@@ -6,8 +6,10 @@ from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 from cryptography.fernet import Fernet
 
-app = QApplication(sys.argv)
+SECRET =os.environ['SECRET']
+print(SECRET)
 
+app = QApplication(sys.argv)
 
 # Distribute lists for table
 def distribute_elements(list1, list2):
@@ -94,9 +96,9 @@ class Window(QMainWindow):
         self.delete_button.move(120, 420)
         self.delete_button.clicked.connect(self.delete_from_table)
 
-        self.find_button = QPushButton("Найти",self)
+        self.find_button = QPushButton("Найти", self)
         self.find_button.setFixedSize(75, 23)
-        self.find_button.move(220,420)
+        self.find_button.move(220, 420)
         self.find_button.clicked.connect(self.find_needed_password)
 
         self.logout_button = QPushButton("Выйти", self)
@@ -353,7 +355,7 @@ class Window(QMainWindow):
         Vbox_layout.addWidget(service_line)
         Vbox_layout.addWidget(button_box)
 
-        pressed_button=dialog.exec()
+        pressed_button = dialog.exec()
 
         if pressed_button == QDialog.DialogCode.Accepted and service_line.text() != '':
             service = service_line.text()
@@ -381,7 +383,7 @@ class Window(QMainWindow):
 
     def find_needed_password(self):
         dialog = QDialog()
-        dialog.resize(350,100)
+        dialog.resize(350, 100)
         Vbox_layout = QVBoxLayout(dialog)
 
         service_line = QLineEdit()
@@ -404,15 +406,15 @@ class Window(QMainWindow):
             cursor.execute('SELECT password FROM services WHERE service=?', (service,))
             result = cursor.fetchone()[-1]
             cursor.execute('SELECT key FROM services WHERE service=?', (service,))
-            key=cursor.fetchone()[-1]
-            cipher=Fernet(key)
+            key = cursor.fetchone()[-1]
+            cipher = Fernet(key)
 
             if result is None:
                 QMessageBox.information(self, 'Не найдено', 'Записанного пароля не найдено')
                 return
             else:
-                decrypted_password=cipher.decrypt(result).decode()
-                QMessageBox.information(self,"Найден пароль",f"Пароль от {service}: {decrypted_password}")
+                decrypted_password = cipher.decrypt(result).decode()
+                QMessageBox.information(self, "Найден пароль", f"Пароль от {service}: {decrypted_password}")
 
             connect.commit()
             connect.close()
