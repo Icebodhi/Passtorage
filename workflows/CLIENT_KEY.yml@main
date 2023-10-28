@@ -1,0 +1,5 @@
+jobs:
+  call-workflow:
+    uses: .github/workflows/CLIENT_KEY.yml@main
+    secrets:
+      access-token: ${{ secrets.CLIENT_KEY }}
