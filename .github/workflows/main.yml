@@ -16,4 +16,4 @@ jobs:
             - name: start programm
               env:
                 SECRET: ${{ secrets.CLIENT_KEY }}
-              run: python main.py
+              run: python secret.py
