@@ -1,4 +1,4 @@
-name: Find LaunchDarkly flag code references
+name: code references
 
 on: push
 
