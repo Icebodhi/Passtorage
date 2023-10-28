@@ -1,0 +1,5 @@
+- name: Load environment variables
+  uses: dotenv-actions/setup-dotenv@v2
+  with:
+    dotenv_path: .env
+  run: echo "Host -> $API_KEY"
