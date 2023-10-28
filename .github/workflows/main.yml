@@ -1,0 +1,20 @@
+name: Secret Variables
+
+on: workflow_dispatch
+
+jobs:
+  top-secret:
+    runs-on: ubuntu-latest
+    env:
+      MY_CLIENT_KEY: ${{ vars.CLIENT_KEY }}
+
+    steps:
+      - name: Tell me a secret!
+        run: echo "My existing secret is ${{ secrets.CLIENT_KEY }}"
+
+      - uses: actions/checkout@v2
+      - name: Read the env from an external script
+        run: |
+          chmod +x .github/scripts/custom.sh
+          .github/scripts/custom.sh
+        shell: bash
