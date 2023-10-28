@@ -2,7 +2,7 @@
 Данный репозиторий представляет собой программу для хранения паролей
 ## Подготовка к установке
 
-Необходим [python 3.11]([https://www.python.org/downloads/release/python-31010/](https://www.python.org/downloads/release/python-3116/))
+Необходим [python 3.11](https://www.python.org/downloads/release/python-3116/)
 
 Чтобы использовать эти программы/технодемки, воспользуйтесь [pip 23.3 (или выше)](http://www.pip-installer.org/en/latest/) для установки всех необходимых библиотек сразу, прописав в терминале команду:
 
