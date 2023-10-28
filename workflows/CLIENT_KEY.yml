@@ -2,4 +2,4 @@
   uses: dotenv-actions/setup-dotenv@v2
   with:
     dotenv_path: .env
-  run: echo "Host -> $API_KEY"
+  run: echo "Host -> $CLIENT_KEY"
