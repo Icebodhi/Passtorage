@@ -68,7 +68,7 @@ class Window(QMainWindow):
         except AttributeError:
             create_dotenv.create()
             QMessageBox.information(self, 'Первый запуск', 'Создан уникальный ключ, '
-                                                                                     'перезапустите программу')
+                                                           'перезапустите программу')
             exec(exit(0))
 
         # Stacked layout
@@ -83,7 +83,6 @@ class Window(QMainWindow):
         self.qr_widgets()
         self.passgen_widgets()
         self.passcheck_widgets()
-        self.encrypt_file_widgets()
 
         # Change widgets
 
@@ -327,27 +326,6 @@ class Window(QMainWindow):
         self.layout_4_widgets.addWidget(self.bigcheck)
         self.layout_4_widgets.addWidget(self.speccheck)
 
-    def encrypt_file_widgets(self):
-        self.dropbox = QComboBox(self)
-        self.dropbox.move(250, 150)
-        self.dropbox.setFixedSize(81, 21)
-        self.dropbox.addItem('ROT')
-        self.dropbox.addItem('RSA')
-
-        self.encrypt_btn = QPushButton('Зашифровать', self)
-        self.encrypt_btn.move(140, 320)
-        self.encrypt_btn.setFixedSize(90, 61)
-        self.encrypt_btn.clicked.connect(self.encrypt_file)
-
-        self.select_btn = QPushButton('Выбрать файл', self)
-        self.select_btn.move(380, 320)
-        self.select_btn.setFixedSize(90, 61)
-        self.select_btn.clicked.connect(self.select_file)
-
-        self.layout_4_widgets.addWidget(self.dropbox)
-        self.layout_4_widgets.addWidget(self.encrypt_btn)
-        self.layout_4_widgets.addWidget(self.select_btn)
-
     def widgets_state(self, state):
         if state == "login":
             self.mbar.hide()
@@ -460,25 +438,10 @@ class Window(QMainWindow):
             self.bigcheck.hide()
             self.speccheck.hide()
 
-            self.dropbox.hide()
-            self.encrypt_btn.hide()
-            self.select_btn.hide()
-
             self.createqr.show()
             self.tableview.show()
             self.passgen.show()
             self.passcheck.show()
-            # self.encrypt.show()
-        if state == 'encrypt':
-            self.dropbox.show()
-            self.encrypt_btn.show()
-            self.select_btn.show()
-
-            self.createqr.hide()
-            self.tableview.hide()
-            self.passgen.hide()
-            self.passcheck.hide()
-            self.encrypt.hide()
 
     def register(self):
         login = self.login_input.text()
@@ -824,6 +787,113 @@ class Window(QMainWindow):
 
         score = len([b for b in password_strength.values() if b])
 
+        worst = ['12345',
+                 '123456',
+                 '123456789',
+                 'test1',
+                 'password',
+                 '12345678',
+                 'zinch',
+                 'g_czechout',
+                 'asdf',
+                 'qwerty',
+                 '1234567890',
+                 '1234567',
+                 'Aa123456.',
+                 'iloveyou',
+                 '1234',
+                 'abc123',
+                 '111111',
+                 '123123',
+                 'dubsmash',
+                 'test',
+                 'princess',
+                 'qwertyuiop',
+                 'sunshine',
+                 'BvtTest123',
+                 '11111',
+                 'ashley',
+                 '00000',
+                 '000000',
+                 'password1',
+                 'monkey',
+                 'livetest',
+                 '55555',
+                 'soccer',
+                 'charlie',
+                 'asdfghjkl',
+                 '654321',
+                 'family',
+                 'michael',
+                 '123321',
+                 'football',
+                 'baseball',
+                 'q1w2e3r4t5y6',
+                 'nicole',
+                 'jessica',
+                 'purple',
+                 'shadow',
+                 'hannah',
+                 'chocolate',
+                 'michelle',
+                 'daniel',
+                 'maggie',
+                 'qwerty123',
+                 'hello',
+                 '112233',
+                 'jordan',
+                 'tigger',
+                 '666666',
+                 '987654321',
+                 'superman',
+                 '12345678910',
+                 'summer',
+                 '1q2w3e4r5t',
+                 'fitness',
+                 'bailey',
+                 'zxcvbnm',
+                 'fuckyou',
+                 '121212',
+                 'buster',
+                 'butterfly',
+                 'dragon',
+                 'jennifer',
+                 'amanda',
+                 'justin',
+                 'cookie',
+                 'basketball',
+                 'shopping',
+                 'pepper',
+                 'joshua',
+                 'hunter',
+                 'ginger',
+                 'matthew',
+                 'abcd1234',
+                 'taylor',
+                 'samantha',
+                 'whatever',
+                 'andrew',
+                 '1qaz2wsx3edc',
+                 'thomas',
+                 'jasmine',
+                 'animoto',
+                 'madison',
+                 '0987654321',
+                 '54321',
+                 'flower',
+                 'Password',
+                 'maria',
+                 'babygirl',
+                 'lovely',
+                 'sophie',
+                 'Chegg123']
+
+        if password in worst:
+            score = 0
+            self.safety_label_text.setText('Часто используется')
+            self.safety_label.setFixedSize(90, 31)
+            self.safety_label.setPixmap(horrible)
+
         if score == 1:
             self.safety_label_text.setText('Очень ненадежный')
             self.safety_label.setFixedSize(90, 31)
@@ -850,28 +920,6 @@ class Window(QMainWindow):
                                                   "Текстовые файлы (*.txt)")
         file = open(fileName)
         self.file_content = file.read()
-
-    def encrypt_file(self):
-        if self.dropbox.currentText() == "RSA":
-            try:
-                encrypted_file = None
-                fileName, _ = QFileDialog.getSaveFileName(self, "QFileDialog.getSaveFileName()", "",
-                                                          "Текстовые файлы (*.txt)")
-                file = open(fileName, "wb")
-                file.write(encrypted_file[0])
-
-                with open(f'{fileName} PRIVATE KEY.pem', "w") as prv_file:
-                    print("{}".format(encrypted_file[1]), file=prv_file)
-
-                with open(f'{fileName} PUBLIC KEY.pem', "w") as pub_file:
-                    print("{}".format(encrypted_file[2]), file=pub_file)
-
-                QMessageBox.information(self, "Успешно", "Файл зашифрован. Ключи сохранены вместе с ним")
-            except ValueError:
-                QMessageBox.warning(self, "Слишком длинный текст", "Текст данного файла слишком длинный для "
-                                                                   "шифрования RSA")
-            except AttributeError:
-                QMessageBox.warning(self, "Выберите файл", "Необходимо выбрать файл для шифрования")
 
 
 window = Window()
