@@ -4,7 +4,9 @@
 
 Необходим [python 3.11](https://www.python.org/downloads/release/python-3116/)
 
-Чтобы использовать эту программу, воспользуйтесь [pip 23.3 (или выше)](http://www.pip-installer.org/en/latest/) для установки всех необходимых библиотек, прописав в терминале команду:
+Чтобы использовать эту программу, воспользуйтесь [pip 23.3 (или выше)](http://www.pip-installer.org/en/latest/) для установки всех необходимых библиотек, запустив установщик requrements.bat 
+
+Или прописав в терминале команду:
 
 ```
 pip install -r requirements.txt
