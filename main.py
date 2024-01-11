@@ -15,13 +15,19 @@ import random
 import string
 import re
 
+try:
+    os.mkdir("Usersdb")
+except OSError:
+    pass
 load_dotenv('Usersdb/.env')
 
 app = QApplication(sys.argv)
 
+
 def distribute_elements(list1, list2):
     result_lists = [[list1[i], list2[i]] for i in range(min(len(list1), len(list2)))]
     return result_lists
+
 
 # Table model
 class TableModel(QAbstractTableModel):
@@ -55,11 +61,14 @@ class Window(QMainWindow):
         self.setWindowTitle("Passtorage")
 
         # Connect dotenv
-        SECRET = os.getenv('SECRET').encode()
-        self.cipher_main = Fernet(SECRET)
-        if SECRET is None:
+        try:
+            SECRET = os.getenv('SECRET')
+            SECRET = SECRET.encode()
+            self.cipher_main = Fernet(SECRET)
+        except AttributeError:
             create_dotenv.create()
-            QMessageBox.information(self, 'Создан уникальный ключ', 'Перезапуск программы при первом запуске')
+            QMessageBox.information(self, 'Первый запуск', 'Создан уникальный ключ, '
+                                                                                     'перезапустите программу')
             exec(exit(0))
 
         # Stacked layout
@@ -459,7 +468,7 @@ class Window(QMainWindow):
             self.tableview.show()
             self.passgen.show()
             self.passcheck.show()
-            #self.encrypt.show()
+            # self.encrypt.show()
         if state == 'encrypt':
             self.dropbox.show()
             self.encrypt_btn.show()
