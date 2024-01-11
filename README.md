@@ -17,7 +17,7 @@ pip install -r requirements.txt
 
 ## Запуск
 
-Запустить main.py (При первом запуске запустить start.bat)
+Запустить start.bat
 
 Или
 
