@@ -19,8 +19,6 @@ load_dotenv('Usersdb/.env')
 
 app = QApplication(sys.argv)
 
-
-# Distribute lists for table
 def distribute_elements(list1, list2):
     result_lists = [[list1[i], list2[i]] for i in range(min(len(list1), len(list2)))]
     return result_lists
