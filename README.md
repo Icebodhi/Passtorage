@@ -17,6 +17,10 @@ pip install -r requirements.txt
 
 ## Запуск
 
+Запустить main.py
+
+Или
+
 Прописать в терминале команду:
 ```
 python passtorage.py
